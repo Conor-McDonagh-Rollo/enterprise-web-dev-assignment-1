@@ -1,0 +1,31 @@
+{
+  "name": "assignment1",
+  "version": "1.0.0",
+  "description": "Init",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx --watch --env-file=.env src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Conor-McDonagh-Rollo/enterprise-web-dev-assignment-1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Conor-McDonagh-Rollo/enterprise-web-dev-assignment-1/issues"
+  },
+  "homepage": "https://github.com/Conor-McDonagh-Rollo/enterprise-web-dev-assignment-1#readme",
+  "devDependencies": {
+    "@types/node": "^25.3.5",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.241.0"
+  }
+}
