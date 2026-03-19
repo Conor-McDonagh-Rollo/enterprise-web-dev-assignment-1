@@ -1,5 +1,6 @@
 # Build & Dependencies
 node_modules/
+layers/shared/nodejs/node_modules/
 dist/
 out/
 *.tsbuildinfo
