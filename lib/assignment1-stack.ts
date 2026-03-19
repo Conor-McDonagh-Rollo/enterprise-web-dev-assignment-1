@@ -33,9 +33,17 @@ export class Assignment1Stack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    // Shared layer with common dependencies
+    const sharedLayer = new lambda.LayerVersion(this, "SharedLayer", {
+      code: lambda.Code.fromAsset("layers/shared"),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
+    });
+
     // Shared Lambda config
     const nodeProps = {
       runtime: lambda.Runtime.NODEJS_20_X,
+      layers: [sharedLayer],
+      bundling: { externalModules: ["@aws-sdk/*", "jsonwebtoken", "bcryptjs"] },
     };
 
     // Lambdas
