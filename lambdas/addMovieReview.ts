@@ -5,13 +5,14 @@ import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  const reviewerId = event.requestContext.authorizer?.userId;
   const body = JSON.parse(event.body ?? "{}") as Record<string, unknown>;
-  const { movieId, reviewerId, date, text } = body;
+  const { movieId, date, text } = body;
 
-  if (!movieId || !reviewerId || !date || !text) {
+  if (!movieId || !date || !text) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ message: "movieId, reviewerId, date, and text are required" }),
+      body: JSON.stringify({ message: "movieId, date, and text are required" }),
     };
   }
 

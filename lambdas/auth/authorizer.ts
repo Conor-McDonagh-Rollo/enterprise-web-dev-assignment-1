@@ -21,7 +21,7 @@ export const handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AP
       return buildPolicy("unauthorized", "Deny", event.methodArn);
     }
 
-    return buildPolicy(decoded.userId, "Allow", event.methodArn);
+    return { ...buildPolicy(decoded.userId, "Allow", event.methodArn), context: { userId: decoded.userId } };
   } catch {
     return buildPolicy("unauthorized", "Deny", event.methodArn);
   }
