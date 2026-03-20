@@ -229,12 +229,8 @@ post_text.grid(row=3, column=1, padx=6, pady=2)
 def do_post_review():
     url = api_url_entry.get() + "/movies/reviews"
     headers = {"Authorization": f"Bearer {token_display.get()}", "Content-Type": "application/json"}
-    data = {
-        "movieId": int(post_movie_id.get()),
-        "reviewerId": post_reviewer.get(),
-        "date": post_date.get(),
-        "text": post_text.get()
-    }
+    raw = {"movieId": post_movie_id.get(), "reviewerId": post_reviewer.get(), "date": post_date.get(), "text": post_text.get()}
+    data = {k: (int(v) if k == "movieId" else v) for k, v in raw.items() if v != ""}
     try:
         r = requests.post(url, json=data, headers=headers, timeout=10)
         show_response("POST", url, resp=r)
