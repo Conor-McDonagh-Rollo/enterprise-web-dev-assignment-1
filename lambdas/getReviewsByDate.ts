@@ -16,11 +16,11 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     };
   }
 
-  // published may be a partial date like "1995-05", begins_with matches it
+  // return a key condition instead of a filter with date-index LSI
   const result = await docClient.send(new QueryCommand({
     TableName: process.env.TABLE_NAME,
-    KeyConditionExpression: "movieId = :movieId",
-    FilterExpression: "begins_with(#d, :published)",
+    IndexName: "date-index",
+    KeyConditionExpression: "movieId = :movieId AND begins_with(#d, :published)",
     ExpressionAttributeNames: { "#d": "date" },
     ExpressionAttributeValues: {
       ":movieId": movieId,

@@ -27,6 +27,11 @@ export class Assignment1Stack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    reviewsTable.addLocalSecondaryIndex({
+      indexName: "date-index",
+      sortKey: { name: "date", type: dynamodb.AttributeType.STRING },
+    });
+
     const usersTable = new dynamodb.Table(this, "UsersTable", {
       partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
