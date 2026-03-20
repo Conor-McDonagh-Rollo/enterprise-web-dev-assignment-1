@@ -4,13 +4,13 @@ __Name:__ Conor McDonagh Rollo
 
 ### Links.
 
-__Demo:__ 
+__Demo:__ https://youtu.be/mb0BOnr6Rr4
 
 ### Screenshots.
 
-![][api]
+![API Gateway console showing the deployed Movie Reviews and Auth APIs][api]
 
-![][db]
+![DynamoDB console showing the reviews, users, and invalidated tokens tables][db]
 
 ###  Implementation Highlights (If relevant).
 
@@ -24,7 +24,5 @@ Password security is handled using bcrypt, which hashes passwords (with a salt f
 
 For API testing, I made a small Python tool with TKinter and the request library. Information on how to run it are in `/api test/README.md`. I preferred this to Postman as it helped me tailor the API to an actual GUI instead of reading and writing requests in the terminal.
 
-###  Extra (If relevant).
-
-[api]: ./images/api.png
-[db]: ./images/db.png
+[api]: ./images/api-console.png
+[db]: ./images/dynamodb.png
