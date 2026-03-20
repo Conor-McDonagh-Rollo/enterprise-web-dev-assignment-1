@@ -6,8 +6,6 @@ import json
 AUTH_URL = "https://replace-with-auth.url/dev"
 API_URL = "https://replace-with-api.url/dev"
 
-token = ""
-
 root = tk.Tk()
 root.title("Movie Reviews API Tester")
 root.resizable(False, False)
@@ -29,8 +27,9 @@ api_url_entry.grid(row=1, column=1, padx=6, pady=(6,0))
 
 ttk.Label(config_frame, text="Token:").grid(row=2, column=0, sticky="w", pady=(6,0))
 token_display = tk.StringVar(value="(not logged in)")
-token_entry = ttk.Entry(config_frame, textvariable=token_display, width=55, state="readonly")
+token_entry = ttk.Entry(config_frame, textvariable=token_display, width=50)
 token_entry.grid(row=2, column=1, padx=6, pady=(6,0))
+ttk.Button(config_frame, text="Clear", command=lambda: token_display.set("")).grid(row=2, column=2, pady=(6,0))
 
 # OUTPUT BOX
 
@@ -117,17 +116,13 @@ login_pass.grid(row=1, column=1, padx=6, pady=2)
 
 
 def do_login():
-    global token
     url = auth_url_entry.get() + "/auth/login"
     data = {"userId": login_user.get(), "password": login_pass.get()}
     try:
         r = requests.post(url, json=data, timeout=10)
         show_response("POST", url, resp=r)
         if r.status_code == 200:
-            token = r.json().get("token", "")
-            # truncate the token so it fits in the box
-            display = token[:60] + "..." if len(token) > 60 else token
-            token_display.set(display)
+            token_display.set(r.json().get("token", ""))
     except Exception as e:
         show_response("POST", url, err=str(e))
 
@@ -136,16 +131,13 @@ ttk.Button(login_frame, text="Login", command=do_login).grid(row=2, column=1, st
 
 
 def do_logout():
-    global token
     url = auth_url_entry.get() + "/auth/logout"
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {token_display.get()}", "Content-Type": "application/json"}
     try:
         r = requests.post(url, headers=headers, timeout=10)
         show_response("POST", url, resp=r)
     except Exception as e:
         show_response("POST", url, err=str(e))
-    token = ""
-    token_display.set("(not logged in)")
 
 
 ttk.Button(auth_tab, text="Logout (clear token)", command=do_logout).grid(row=2, column=0, sticky="w")
@@ -236,7 +228,7 @@ post_text.grid(row=3, column=1, padx=6, pady=2)
 
 def do_post_review():
     url = api_url_entry.get() + "/movies/reviews"
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {token_display.get()}", "Content-Type": "application/json"}
     data = {
         "movieId": int(post_movie_id.get()),
         "reviewerId": post_reviewer.get(),
@@ -277,7 +269,7 @@ put_text.grid(row=2, column=1, padx=6, pady=2)
 def do_put_review():
     movie_id = put_movie_id.get()
     url = api_url_entry.get() + f"/movies/{movie_id}/reviews"
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {token_display.get()}", "Content-Type": "application/json"}
     data = {"reviewerId": put_reviewer.get(), "text": put_text.get()}
     try:
         r = requests.put(url, json=data, headers=headers, timeout=10)
