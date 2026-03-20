@@ -38,6 +38,13 @@ export class Assignment1Stack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    const invalidatedTokensTable = new dynamodb.Table(this, "InvalidatedTokens", {
+      partitionKey: { name: "token", type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      timeToLiveAttribute: "expiry",
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
     // Shared layer with common dependencies
     const sharedLayer = new lambda.LayerVersion(this, "SharedLayer", {
       code: lambda.Code.fromAsset("layers/shared"),
@@ -82,7 +89,7 @@ export class Assignment1Stack extends cdk.Stack {
     reviewsTable.grantReadWriteData(updateMovieReviewFn);
 
     // Auth lambdas
-    const authEnv = { USERS_TABLE: usersTable.tableName, JWT_SECRET };
+    const authEnv = { USERS_TABLE: usersTable.tableName, JWT_SECRET, INVALIDATED_TOKENS_TABLE: invalidatedTokensTable.tableName };
 
     const registerFn = new lambdaNode.NodejsFunction(this, "Register", {
       entry: "lambdas/auth/register.ts",
@@ -98,17 +105,20 @@ export class Assignment1Stack extends cdk.Stack {
 
     const logoutFn = new lambdaNode.NodejsFunction(this, "Logout", {
       entry: "lambdas/auth/logout.ts",
+      environment: { INVALIDATED_TOKENS_TABLE: invalidatedTokensTable.tableName, JWT_SECRET },
       ...nodeProps,
     });
 
     const authorizerFn = new lambdaNode.NodejsFunction(this, "Authorizer", {
       entry: "lambdas/auth/authorizer.ts",
-      environment: { JWT_SECRET },
+      environment: { JWT_SECRET, INVALIDATED_TOKENS_TABLE: invalidatedTokensTable.tableName },
       ...nodeProps,
     });
 
     usersTable.grantReadWriteData(registerFn);
     usersTable.grantReadData(loginFn);
+    invalidatedTokensTable.grantWriteData(logoutFn);
+    invalidatedTokensTable.grantReadData(authorizerFn);
 
     // JWT authorizer (used on POST and PUT)
     const jwtAuthorizer = new apigw.TokenAuthorizer(this, "JwtAuthorizer", {
