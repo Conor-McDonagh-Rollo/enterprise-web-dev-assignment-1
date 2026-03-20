@@ -132,6 +132,20 @@ export class Assignment1Stack extends cdk.Stack {
       authorizationType: apigw.AuthorizationType.CUSTOM,
     };
 
+    const S = { type: apigw.JsonSchemaType.STRING };
+    const N = { type: apigw.JsonSchemaType.NUMBER };
+
+    const model = (targetApi: apigw.RestApi, id: string, required: string[], properties: Record<string, apigw.JsonSchema>) =>
+      targetApi.addModel(id, {
+        contentType: "application/json",
+        schema: { type: apigw.JsonSchemaType.OBJECT, required, properties },
+      });
+
+    const validated = (validator: apigw.RequestValidator, m: apigw.Model) => ({
+      requestValidator: validator,
+      requestModels: { "application/json": m },
+    });
+
     // Movie Reviews API
     const api = new apigw.RestApi(this, "MovieReviewsApi", {
       restApiName: "Movie Reviews API",
@@ -142,16 +156,20 @@ export class Assignment1Stack extends cdk.Stack {
       },
     });
 
+    const reviewValidator = new apigw.RequestValidator(this, "ReviewValidator", { restApi: api, validateRequestBody: true });
+    const postReviewModel = model(api, "PostReview", ["movieId", "reviewerId", "date", "text"], { movieId: N, reviewerId: S, date: S, text: S });
+    const putReviewModel  = model(api, "PutReview", ["reviewerId", "text"], { reviewerId: S, text: S });
+
     // /movies
     const moviesResource = api.root.addResource("movies");
     // /movies/reviews - POST (auth required)
     moviesResource.addResource("reviews")
-      .addMethod("POST", new apigw.LambdaIntegration(addMovieReviewFn), authOptions);
+      .addMethod("POST", new apigw.LambdaIntegration(addMovieReviewFn), { ...authOptions, ...validated(reviewValidator, postReviewModel) });
 
     // /movies/{movieId}/reviews - GET (public), PUT (auth required)
     const movieReviewsResource = moviesResource.addResource("{movieId}").addResource("reviews");
     movieReviewsResource.addMethod("GET", new apigw.LambdaIntegration(getMovieReviewsFn));
-    movieReviewsResource.addMethod("PUT", new apigw.LambdaIntegration(updateMovieReviewFn), authOptions);
+    movieReviewsResource.addMethod("PUT", new apigw.LambdaIntegration(updateMovieReviewFn), { ...authOptions, ...validated(reviewValidator, putReviewModel) });
 
     // /reviews - GET (public)
     api.root.addResource("reviews")
@@ -167,9 +185,13 @@ export class Assignment1Stack extends cdk.Stack {
       },
     });
 
+    const authValidator = new apigw.RequestValidator(this, "AuthValidator", { restApi: authApi, validateRequestBody: true });
+    const registerModel = model(authApi, "Register", ["userId", "password", "name"], { userId: S, password: S, name: S });
+    const loginModel = model(authApi, "Login", ["userId", "password"], { userId: S, password: S });
+
     const authResource = authApi.root.addResource("auth");
-    authResource.addResource("register").addMethod("POST", new apigw.LambdaIntegration(registerFn));
-    authResource.addResource("login").addMethod("POST", new apigw.LambdaIntegration(loginFn));
+    authResource.addResource("register").addMethod("POST", new apigw.LambdaIntegration(registerFn), validated(authValidator, registerModel));
+    authResource.addResource("login").addMethod("POST", new apigw.LambdaIntegration(loginFn), validated(authValidator, loginModel));
     authResource.addResource("logout").addMethod("POST", new apigw.LambdaIntegration(logoutFn));
 
     new cdk.CfnOutput(this, "MovieReviewsApiUrl", {
