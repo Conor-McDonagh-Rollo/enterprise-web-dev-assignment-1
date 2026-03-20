@@ -213,24 +213,19 @@ ttk.Label(post_frame, text="Movie ID:").grid(row=0, column=0, sticky="w", pady=2
 post_movie_id = ttk.Entry(post_frame, width=30)
 post_movie_id.grid(row=0, column=1, padx=6, pady=2)
 
-ttk.Label(post_frame, text="Reviewer ID:").grid(row=1, column=0, sticky="w", pady=2)
-post_reviewer = ttk.Entry(post_frame, width=30)
-post_reviewer.grid(row=1, column=1, padx=6, pady=2)
-
-ttk.Label(post_frame, text="Date (YYYY-MM-DD):").grid(row=2, column=0, sticky="w", pady=2)
+ttk.Label(post_frame, text="Date (YYYY-MM-DD):").grid(row=1, column=0, sticky="w", pady=2)
 post_date = ttk.Entry(post_frame, width=30)
-post_date.grid(row=2, column=1, padx=6, pady=2)
+post_date.grid(row=1, column=1, padx=6, pady=2)
 
-ttk.Label(post_frame, text="Review text:").grid(row=3, column=0, sticky="w", pady=2)
+ttk.Label(post_frame, text="Review text:").grid(row=2, column=0, sticky="w", pady=2)
 post_text = ttk.Entry(post_frame, width=40)
-post_text.grid(row=3, column=1, padx=6, pady=2)
+post_text.grid(row=2, column=1, padx=6, pady=2)
 
 
 def do_post_review():
     url = api_url_entry.get() + "/movies/reviews"
     headers = {"Authorization": f"Bearer {token_display.get()}", "Content-Type": "application/json"}
-    raw = {"movieId": post_movie_id.get(), "reviewerId": post_reviewer.get(), "date": post_date.get(), "text": post_text.get()}
-    data = {k: (int(v) if k == "movieId" else v) for k, v in raw.items() if v != ""}
+    data = {"movieId": int(post_movie_id.get()), "date": post_date.get(), "text": post_text.get()}
     try:
         r = requests.post(url, json=data, headers=headers, timeout=10)
         show_response("POST", url, resp=r)
@@ -238,7 +233,7 @@ def do_post_review():
         show_response("POST", url, err=str(e))
 
 
-ttk.Button(post_frame, text="Send", command=do_post_review).grid(row=4, column=1, sticky="e", pady=(6,0))
+ttk.Button(post_frame, text="Send", command=do_post_review).grid(row=3, column=1, sticky="e", pady=(6,0))
 
 
 # PUT TAB
@@ -253,20 +248,16 @@ ttk.Label(put_frame, text="Movie ID:").grid(row=0, column=0, sticky="w", pady=2)
 put_movie_id = ttk.Entry(put_frame, width=30)
 put_movie_id.grid(row=0, column=1, padx=6, pady=2)
 
-ttk.Label(put_frame, text="Reviewer ID:").grid(row=1, column=0, sticky="w", pady=2)
-put_reviewer = ttk.Entry(put_frame, width=30)
-put_reviewer.grid(row=1, column=1, padx=6, pady=2)
-
-ttk.Label(put_frame, text="New review text:").grid(row=2, column=0, sticky="w", pady=2)
+ttk.Label(put_frame, text="New review text:").grid(row=1, column=0, sticky="w", pady=2)
 put_text = ttk.Entry(put_frame, width=40)
-put_text.grid(row=2, column=1, padx=6, pady=2)
+put_text.grid(row=1, column=1, padx=6, pady=2)
 
 
 def do_put_review():
     movie_id = put_movie_id.get()
     url = api_url_entry.get() + f"/movies/{movie_id}/reviews"
     headers = {"Authorization": f"Bearer {token_display.get()}", "Content-Type": "application/json"}
-    data = {"reviewerId": put_reviewer.get(), "text": put_text.get()}
+    data = {"text": put_text.get()}
     try:
         r = requests.put(url, json=data, headers=headers, timeout=10)
         show_response("PUT", url, resp=r)
@@ -274,7 +265,7 @@ def do_put_review():
         show_response("PUT", url, err=str(e))
 
 
-ttk.Button(put_frame, text="Send", command=do_put_review).grid(row=3, column=1, sticky="e", pady=(6,0))
+ttk.Button(put_frame, text="Send", command=do_put_review).grid(row=2, column=1, sticky="e", pady=(6,0))
 
 
 root.mainloop()

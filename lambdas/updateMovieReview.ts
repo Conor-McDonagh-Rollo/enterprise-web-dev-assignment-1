@@ -10,14 +10,12 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     return { statusCode: 400, body: JSON.stringify({ message: "Invalid movieId" }) };
   }
 
+  const reviewerId = event.requestContext.authorizer?.userId;
   const body = JSON.parse(event.body ?? "{}") as Record<string, unknown>;
-  const { reviewerId, text } = body;
+  const { text } = body;
 
-  if (!reviewerId || !text) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "reviewerId and text are required in the request body" }),
-    };
+  if (!text) {
+    return { statusCode: 400, body: JSON.stringify({ message: "text is required" }) };
   }
 
   try {

@@ -157,8 +157,8 @@ export class Assignment1Stack extends cdk.Stack {
     });
 
     const reviewValidator = new apigw.RequestValidator(this, "ReviewValidator", { restApi: api, validateRequestBody: true });
-    const postReviewModel = model(api, "PostReview", ["movieId", "reviewerId", "date", "text"], { movieId: N, reviewerId: S, date: S, text: S });
-    const putReviewModel  = model(api, "PutReview", ["reviewerId", "text"], { reviewerId: S, text: S });
+    const postReviewModel = model(api, "PostReview", ["movieId", "date", "text"], { movieId: N, date: S, text: S });
+    const putReviewModel  = model(api, "PutReview",  ["text"],                   { text: S });
 
     // /movies
     const moviesResource = api.root.addResource("movies");
