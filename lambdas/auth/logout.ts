@@ -4,12 +4,13 @@ import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import * as jwt from "jsonwebtoken";
 
 const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const CORS = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const token = event.headers?.Authorization?.replace("Bearer ", "");
 
   if (!token) {
-    return { statusCode: 400, body: JSON.stringify({ message: "No token provided" }) };
+    return { statusCode: 400, headers: CORS, body: JSON.stringify({ message: "No token provided" }) };
   }
 
   const decoded = jwt.decode(token) as jwt.JwtPayload;
@@ -22,5 +23,5 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     },
   }));
 
-  return { statusCode: 200, body: JSON.stringify({ message: "Logged out successfully" }) };
+  return { statusCode: 200, headers: CORS, body: JSON.stringify({ message: "Logged out successfully" }) };
 };
