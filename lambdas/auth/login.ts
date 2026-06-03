@@ -5,13 +5,14 @@ import * as bcrypt from "bcryptjs";
 import * as jwt from "jsonwebtoken";
 
 const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const CORS = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const body = JSON.parse(event.body ?? "{}");
   const { userId, password } = body;
 
   if (!userId || !password) {
-    return { statusCode: 400, body: JSON.stringify({ message: "userId and password are required" }) };
+    return { statusCode: 400, headers: CORS, body: JSON.stringify({ message: "userId and password are required" }) };
   }
 
   const result = await docClient.send(new GetCommand({
@@ -20,7 +21,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   }));
 
   if (!result.Item || !(await bcrypt.compare(password, result.Item.passwordHash))) {
-    return { statusCode: 401, body: JSON.stringify({ message: "Invalid credentials" }) };
+    return { statusCode: 401, headers: CORS, body: JSON.stringify({ message: "Invalid credentials" }) };
   }
 
   const token = jwt.sign(
@@ -29,5 +30,5 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     { expiresIn: "1h" }
   );
 
-  return { statusCode: 200, body: JSON.stringify({ token }) };
+  return { statusCode: 200, headers: CORS, body: JSON.stringify({ token }) };
 };

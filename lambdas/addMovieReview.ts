@@ -3,6 +3,7 @@ import { DynamoDBClient, ConditionalCheckFailedException } from "@aws-sdk/client
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
 const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const CORS = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const reviewerId = event.requestContext.authorizer?.userId;
@@ -12,6 +13,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   if (!movieId || !date || !text) {
     return {
       statusCode: 400,
+      headers: CORS,
       body: JSON.stringify({ message: "movieId, date, and text are required" }),
     };
   }
@@ -24,14 +26,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     }));
   } catch (err) {
     if (err instanceof ConditionalCheckFailedException) {
-      return { statusCode: 409, body: JSON.stringify({ message: "Review already exists" }) };
+      return { statusCode: 409, headers: CORS, body: JSON.stringify({ message: "Review already exists" }) };
     }
     throw err;
   }
 
   return {
     statusCode: 201,
-    headers: { "Content-Type": "application/json" },
+    headers: CORS,
     body: JSON.stringify({ message: "Review added" }),
   };
 };

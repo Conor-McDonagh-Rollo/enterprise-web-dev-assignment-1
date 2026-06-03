@@ -3,11 +3,12 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
 const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const CORS = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const movieId = Number(event.pathParameters?.movieId);
   if (!movieId || isNaN(movieId)) {
-    return { statusCode: 400, body: JSON.stringify({ message: "Invalid movieId" }) };
+    return { statusCode: 400, headers: CORS, body: JSON.stringify({ message: "Invalid movieId" }) };
   }
 
   const reviewerId = event.queryStringParameters?.reviewer;
@@ -28,7 +29,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
   return {
     statusCode: 200,
-    headers: { "Content-Type": "application/json" },
+    headers: CORS,
     body: JSON.stringify({ reviews: result.Items ?? [] }),
   };
 };

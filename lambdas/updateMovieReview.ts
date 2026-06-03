@@ -3,11 +3,12 @@ import { DynamoDBClient, ConditionalCheckFailedException } from "@aws-sdk/client
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 
 const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const CORS = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const movieId = Number(event.pathParameters?.movieId);
   if (!movieId || isNaN(movieId)) {
-    return { statusCode: 400, body: JSON.stringify({ message: "Invalid movieId" }) };
+    return { statusCode: 400, headers: CORS, body: JSON.stringify({ message: "Invalid movieId" }) };
   }
 
   const reviewerId = event.requestContext.authorizer?.userId;
@@ -15,7 +16,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   const { text } = body;
 
   if (!text) {
-    return { statusCode: 400, body: JSON.stringify({ message: "text is required" }) };
+    return { statusCode: 400, headers: CORS, body: JSON.stringify({ message: "text is required" }) };
   }
 
   try {
@@ -29,14 +30,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     }));
   } catch (err) {
     if (err instanceof ConditionalCheckFailedException) {
-      return { statusCode: 404, body: JSON.stringify({ message: "Review not found" }) };
+      return { statusCode: 404, headers: CORS, body: JSON.stringify({ message: "Review not found" }) };
     }
     throw err;
   }
 
   return {
     statusCode: 200,
-    headers: { "Content-Type": "application/json" },
+    headers: CORS,
     body: JSON.stringify({ message: "Review updated" }),
   };
 };
