@@ -146,6 +146,11 @@ export class Assignment1Stack extends cdk.Stack {
       requestModels: { "application/json": m },
     });
 
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "'*'",
+      "Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'",
+    };
+
     // Movie Reviews API
     const api = new apigw.RestApi(this, "MovieReviewsApi", {
       restApiName: "Movie Reviews API",
@@ -153,7 +158,19 @@ export class Assignment1Stack extends cdk.Stack {
       defaultCorsPreflightOptions: {
         allowOrigins: apigw.Cors.ALL_ORIGINS,
         allowMethods: apigw.Cors.ALL_METHODS,
+        allowHeaders: ["Content-Type", "Authorization", "X-Amz-Date", "X-Api-Key", "X-Amz-Security-Token"],
       },
+    });
+
+    // Gateway responses add CORS headers to authorizer 401/403 rejections,
+    // which API Gateway otherwise sends without any CORS headers
+    api.addGatewayResponse("ApiUnauthorized", {
+      type: apigw.ResponseType.UNAUTHORIZED,
+      responseHeaders: corsHeaders,
+    });
+    api.addGatewayResponse("ApiAccessDenied", {
+      type: apigw.ResponseType.ACCESS_DENIED,
+      responseHeaders: corsHeaders,
     });
 
     const reviewValidator = new apigw.RequestValidator(this, "ReviewValidator", { restApi: api, validateRequestBody: true });
@@ -182,7 +199,17 @@ export class Assignment1Stack extends cdk.Stack {
       defaultCorsPreflightOptions: {
         allowOrigins: apigw.Cors.ALL_ORIGINS,
         allowMethods: apigw.Cors.ALL_METHODS,
+        allowHeaders: ["Content-Type", "Authorization", "X-Amz-Date", "X-Api-Key", "X-Amz-Security-Token"],
       },
+    });
+
+    authApi.addGatewayResponse("AuthUnauthorized", {
+      type: apigw.ResponseType.UNAUTHORIZED,
+      responseHeaders: corsHeaders,
+    });
+    authApi.addGatewayResponse("AuthAccessDenied", {
+      type: apigw.ResponseType.ACCESS_DENIED,
+      responseHeaders: corsHeaders,
     });
 
     const authValidator = new apigw.RequestValidator(this, "AuthValidator", { restApi: authApi, validateRequestBody: true });
